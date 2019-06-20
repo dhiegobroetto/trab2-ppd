@@ -12,13 +12,13 @@ E descompacte o zip em um diretório qualquer.
 
 Entrar na pasta bin do glassfish e executar:
 
-`asadmin start-domain`
+`./asadmin start-domain`
 
 Para iniciar o servidor do glassfish (isso pode levar alguns minutos).
 
 É necessário importar o arquivo XML de configuração para as filas. Para isso basta executar, ainda na pasta bin do glassfish:
 
-`asadmin add-resources <diretório do arquivo>/<nome do arquivo>.xml`
+`./asadmin add-resources <diretório do arquivo>/<nome do arquivo>.xml`
 
 # Compilar e executar
 
