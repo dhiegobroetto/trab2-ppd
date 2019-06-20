@@ -12,6 +12,7 @@ import java.rmi.RemoteException;
 
 public interface Attacker extends Remote {
 
+	
 	/**
 	 * Operação oferecida pelo mestre para iniciar um ataque.
 	 * @param ciphertext mensagem critografada
