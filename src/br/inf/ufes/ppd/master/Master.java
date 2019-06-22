@@ -10,7 +10,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.jms.*;
+
+import com.sun.messaging.ConnectionConfiguration;
 
 import br.inf.ufes.ppd.Attacker;
 import br.inf.ufes.ppd.Guess;
@@ -39,6 +46,41 @@ public class Master implements Attacker {
 			System.out.println("[System Initiation] Master ready!");
 		} catch (RemoteException e) {
 			System.err.println("[Error] Error to connect master to server.");
+			e.printStackTrace();
+		}
+		
+		
+		try (Scanner s = new Scanner(System.in)) {
+			Logger.getLogger("").setLevel(Level.SEVERE);
+
+			System.out.println("obtaining connection factory...");
+			com.sun.messaging.ConnectionFactory connectionFactory = new com.sun.messaging.ConnectionFactory();
+			connectionFactory.setProperty(ConnectionConfiguration.imqAddressList,"localhost:7676");	
+			System.out.println("obtained connection factory.");
+			
+			System.out.println("obtaining queue...");
+			com.sun.messaging.Queue queue = new com.sun.messaging.Queue("PhysicalQueue");
+			System.out.println("obtained queue.");
+
+			JMSContext context = connectionFactory.createContext();
+			JMSProducer producer = context.createProducer();
+			JMSConsumer consumer = context.createConsumer(queue); 
+			
+			while (true)
+			{
+				System.out.print("enter your message:");
+				String content = s.nextLine();		    
+				MapMessage message = context.createMapMessage(); 
+				message.setString("message", content);
+				producer.send(queue,message);
+				Message m = consumer.receive();
+				if (m instanceof MapMessage)
+				{
+					System.out.print("\nreceived message: ");
+					System.out.println(((MapMessage)m).getString("message"));
+				}
+			}
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
