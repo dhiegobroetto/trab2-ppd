@@ -20,6 +20,15 @@ Para iniciar o servidor do glassfish (isso pode levar alguns minutos).
 
 `./asadmin add-resources <diretório do arquivo>/<nome do arquivo>.xml`
 
+Ainda é necessário adicionar os JARs externos do glassfish no Eclipse.
+
+Para isso, basta clicar com o botão direito sob o projeto (Alt + Enter)
+
+* Clicar em _Java Build Path_
+* Clicar em _Add External JARs_
+* Selecionar os JARS **appserv-rt.jar**, **gf-client.jar** e **javaee.jar**. Todos os três se encontram no diretório:
+`<diretório do glassfish>/lib/`
+
 # Compilar e executar
 
 Com as filas importadas, agora podemos compilar o projeto.
