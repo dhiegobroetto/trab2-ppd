@@ -29,6 +29,14 @@ Para isso, basta clicar com o botão direito sob o projeto (Alt + Enter)
 * Selecionar os JARS **appserv-rt.jar**, **gf-client.jar** e **javaee.jar**. Todos os três se encontram no diretório:
 `<diretório do glassfish>/lib/`
 
+# Instalação do projeto
+
+Faça um clone do projeto em alguma pasta da sua máquina:
+
+`git clone https://github.com/dhiegobroetto/trab2-ppd.git`
+
+Crie uma pasta _bin_ no diretório raíz do projeto.
+
 # Compilar e executar
 
 Com as filas importadas, agora podemos compilar o projeto.
