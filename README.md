@@ -28,9 +28,17 @@ Execute na pasta raíz do projeto o comando:
 
 `java -d bin -cp .:/<diretório do glassfish>/lib/gf-client.jar src/*.java`
 
+No nosso projeto fica:
+
+`javac -d bin -cp .:/home/dsbroetto/workspace/glassfish5/glassfish/lib/gf-client.jar src/br/inf/ufes/ppd/*.java src/br/inf/ufes/ppd/client/*.java src/br/inf/ufes/ppd/master/*.java src/br/inf/ufes/ppd/model/*.java src/br/inf/ufes/ppd/slave/*.java`
+
 Para executar cada arquivo, basta executar:
 
-`java -cp .:./bin:/<diretório do glassfish>/lib/gf-client.jar <nome da classe>`
+`java -cp .:./bin:/<diretório do glassfish>/lib/gf-client.jar <caminho da classe>`
+
+No nosso projeto fica, por exemplo:
+
+`java -cp .:./bin:/<diretório do glassfish>/lib/gf-client.jar br.inf.ufes.ppd.master.Master`
 
 # Especificações:
 
