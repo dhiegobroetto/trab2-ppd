@@ -22,7 +22,7 @@ Para iniciar o servidor do glassfish (isso pode levar alguns minutos).
 
 Ainda é necessário adicionar os JARs externos do glassfish no Eclipse.
 
-Para isso, basta clicar com o botão direito sob o projeto (Alt + Enter)
+Para isso, basta clicar com o botão direito sob o projeto (Alt + Enter):
 
 * Clicar em _Java Build Path_
 * Clicar em _Add External JARs_
