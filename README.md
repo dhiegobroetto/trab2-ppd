@@ -20,34 +20,25 @@ Para iniciar o servidor do glassfish (isso pode levar alguns minutos).
 
 `./asadmin add-resources <diretório do arquivo>/<nome do arquivo>.xml`
 
-Ainda é necessário adicionar os JARs externos do glassfish no Eclipse.
-
-Para isso, basta clicar com o botão direito sob o projeto (Alt + Enter):
-
-* Clicar em _Java Build Path_
-* Clicar em _Add External JARs_
-* Selecionar os JARS **appserv-rt.jar**, **gf-client.jar** e **javaee.jar**. Todos os três se encontram no diretório:
-`<diretório do glassfish>/lib/`
-
-# Instalação do projeto
-
-Faça um clone do projeto em alguma pasta da sua máquina:
-
-`git clone https://github.com/dhiegobroetto/trab2-ppd.git`
-
-Crie uma pasta _bin_ no diretório raíz do projeto.
-
 # Compilar e executar
 
 Com as filas importadas, agora podemos compilar o projeto.
 
 Execute na pasta raíz do projeto o comando:
 
-`javac -d bin -cp .:/<diretório do glassfish>/lib/gf-client.jar src/*.java`
+`java -d bin -cp .:/<diretório do glassfish>/lib/gf-client.jar src/*.java`
+
+No nosso projeto fica:
+
+`javac -d bin -cp .:/home/dsbroetto/workspace/glassfish5/glassfish/lib/gf-client.jar src/br/inf/ufes/ppd/*.java src/br/inf/ufes/ppd/client/*.java src/br/inf/ufes/ppd/master/*.java src/br/inf/ufes/ppd/model/*.java src/br/inf/ufes/ppd/slave/*.java`
 
 Para executar cada arquivo, basta executar:
 
-`java -cp .:./bin:/<diretório do glassfish>/lib/gf-client.jar <nome da classe>`
+`java -cp .:./bin:/<diretório do glassfish>/lib/gf-client.jar <caminho da classe>`
+
+No nosso projeto fica, por exemplo:
+
+`java -cp .:./bin:/<diretório do glassfish>/lib/gf-client.jar br.inf.ufes.ppd.master.Master`
 
 # Especificações:
 
