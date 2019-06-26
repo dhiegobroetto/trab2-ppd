@@ -11,7 +11,7 @@ import java.util.Random;
 
 import br.inf.ufes.ppd.Decrypt;
 import br.inf.ufes.ppd.Guess;
-import br.inf.ufes.ppd.master.Master;
+import br.inf.ufes.ppd.Master;
 
 public class ClientExecute {
 	public static void main(String[] args) {
@@ -26,7 +26,7 @@ public class ClientExecute {
 					Registry registry = LocateRegistry.getRegistry(args[0]);
 					Master master = (Master) registry.lookup("mestre");
 					ciphertext = Decrypt.readFile("../files/" + (i * 10000) + ".cipher");
-					long initialTime = System.nanoTime();
+					long initialTime = System.nanoTime();				
 					guesses = master.attack(ciphertext, knowntext);
 					long finalTime = System.nanoTime();
 					// Date totalDate = new Date(finalTime - initialTime);
@@ -61,17 +61,27 @@ public class ClientExecute {
 			Registry registry = LocateRegistry.getRegistry(args[0]);
 			Master master = (Master) registry.lookup("mestre");
 			byte[] knowntext = args[1].getBytes();
+			
+			// Initial Time
 			long initialTime = System.nanoTime();
+			
+			// Attack
 			guesses = master.attack(ciphertext, knowntext);
+			
+			// Final Time
 			long finalTime = System.nanoTime();
+			
+			// Total time
 			long totalTime = finalTime - initialTime;
 			double secondsTime = (double) (totalTime / 1_000_000_000.0);
 			System.out.println("Total time: " + secondsTime + " seconds.");
-			for (Guess guess : guesses) {
-				if (guess == null)
-					break;
-				Decrypt.saveFile(guess.getKey() + ".msg", guess.getMessage());
-			}
+			
+			
+//			for (Guess guess : guesses) {
+//				if (guess == null)
+//					break;
+//				Decrypt.saveFile(guess.getKey() + ".msg", guess.getMessage());
+//			}
 		} catch (RemoteException e) {
 			System.out.println("[Error] RemoteException in ClientExecute.");
 			e.printStackTrace();
