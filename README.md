@@ -30,7 +30,7 @@ Execute na pasta raíz do projeto o comando:
 
 No nosso projeto fica:
 
-`javac -d bin -cp .:/home/dsbroetto/workspace/glassfish5/glassfish/lib/gf-client.jar src/br/inf/ufes/ppd/*.java src/br/inf/ufes/ppd/client/*.java src/br/inf/ufes/ppd/master/*.java src/br/inf/ufes/ppd/model/*.java src/br/inf/ufes/ppd/slave/*.java`
+`javac -d bin -cp .:/<diretório do glassfish>/lib/gf-client.jar src/br/inf/ufes/ppd/*.java src/br/inf/ufes/ppd/client/*.java src/br/inf/ufes/ppd/master/*.java src/br/inf/ufes/ppd/model/*.java src/br/inf/ufes/ppd/slave/*.java`
 
 Para executar cada arquivo, basta executar:
 
