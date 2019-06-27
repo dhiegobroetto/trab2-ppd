@@ -5,3 +5,6 @@
 \.DS_Store
 
 \.settings/
+glassfish-5.0.zip
+glassfish5/*
+*.classpath

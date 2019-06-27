@@ -7,11 +7,9 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -33,6 +31,7 @@ public class MasterExecute implements Master, MessageListener {
 	private byte[] ciphertext;
 	private byte[] knowntext;
 	private int m;
+	
 
 	public MasterExecute(String fileName, int m) {
 		this.lineNumber = this.linesNumberFile(fileName);
@@ -46,9 +45,28 @@ public class MasterExecute implements Master, MessageListener {
 			Remote masterRef = UnicastRemoteObject.exportObject(master, 0);
 			Registry registry = LocateRegistry.getRegistry("localhost");
 			registry.rebind("mestre", masterRef);
+			
+			Logger.getLogger("").setLevel(Level.SEVERE);
+			System.out.println("obtaining connection factory...");
+			com.sun.messaging.ConnectionFactory connectionFactory = new com.sun.messaging.ConnectionFactory();
+			connectionFactory.setProperty(ConnectionConfiguration.imqAddressList,"localhost:7676");	
+			System.out.println("obtained connection factory.");
+			
+			System.out.println("obtaining queues...");
+			com.sun.messaging.Queue guessesQueue = new com.sun.messaging.Queue("GuessesQueue");
+			System.out.println("obtained queues.");
+
+			JMSContext context = connectionFactory.createContext();
+			JMSConsumer consumer = context.createConsumer(guessesQueue);
+			
+			MessageListener listener = master;
+			consumer.setMessageListener(listener);
+			
 			System.out.println("[System Initiation] Master ready!");
 		} catch (RemoteException e) {
 			System.err.println("[Error] Error to connect master to server.");
+			e.printStackTrace();
+		} catch (JMSException e) {
 			e.printStackTrace();
 		}
 	}
@@ -81,17 +99,15 @@ public class MasterExecute implements Master, MessageListener {
 			System.out.println("obtained queues.");
 
 			JMSContext context = connectionFactory.createContext();
-			JMSProducer producer = context.createProducer();
-			JMSConsumer consumer = context.createConsumer(guessesQueue); 
+			JMSProducer producer = context.createProducer(); 
 			
 			for (int i = 0; i < partitionSize; i++) {
 				MapMessage message = context.createMapMessage(); 
-//				this.getCiphertext(),
-//				this.getKnowntext(), initialwordindex, finalwordindex, attackNumberLocal, this
+
 				message.setBytes("cipherText", ciphertext);
 				message.setBytes("knownText", knowntext);
 				message.setLong("initialWordIndex", initialwordindex);
-				if (i == this.getM() - 1) finalwordindex += modwordindex;
+				if (i == partitionSize - 1) finalwordindex += modwordindex;
 				message.setLong("finalWordIndex", finalwordindex);
 				message.setInt("attackNumber", attackNumberLocal);
 				producer.send(subAttacksQueue, message);
@@ -100,70 +116,26 @@ public class MasterExecute implements Master, MessageListener {
 				finalwordindex += keyNumbers;
 			}
 			
-			while(true);
-//			while (true)
-//			{
-//				System.out.print("enter your message:");
-//				String content = s.nextLine();		    
-//				MapMessage message = context.createMapMessage(); 
-//				message.setString("message", content);
-//				producer.send(subAttacksQueue,message);
-//				Message m = consumer.receive();
-//				if (m instanceof MapMessage)
-//				{
-//					System.out.print("\nreceived message: ");
-//					System.out.println(((MapMessage)m).getString("message"));
-//				}
-//			}
-		} catch (Exception e) {
+
+		} catch (JMSException e) {
 			e.printStackTrace();
 		}
 		
-//		long initialwordindex, finalwordindex, modwordindex;
 
-		// Atribui os valores para as variáveis que serão utilizadas no ataque.
-//		initialwordindex = 0;
-//		finalwordindex = this.getLineNumber() / getMapSlaveSize();
-
-		// Armazena o resto da divisão para acrescentar na última partição.
-//		modwordindex = this.getLineNumber() % getMapSlaveSize();
-		
-		
-		
-//		attackNumberLocal = this.getAttackNumber();
-//
-//		System.out.println("[System Attack] Attack no." + attackNumberLocal + " has begun!");
-//
-//		this.getGuessesMap().put(attackNumberLocal, new ArrayList<Guess>());
-
-		
-		
-		
-		
-//		long keyNumbers = finalwordindex;
-
-//		this.incrementAttackNumber();
-//
-//		System.out.println("[System Attack] Attack no." + attackNumberLocal + " is done!");
-//
-//		Guess[] guesses = new Guess[this.getGuessesMap().get(attackNumberLocal).size()];
-//		int guessCount = 0;
-//		for (Guess g : this.getGuessesMap().get(attackNumberLocal)) {
-//			guesses[guessCount++] = g;
-//		}
-//
-//		return guesses;
 		return null;
 	}
 	
 	@Override
 	public void onMessage(Message m) {
 		try {
-			if (m instanceof TextMessage)
-			{
-				System.out.print("\nreceived message: ");
-				System.out.println(((TextMessage)m).getText());
-				System.out.print("enter your message:");
+			if (m instanceof MapMessage) {
+				
+				long initialwordindex = ((MapMessage) m).getLong("initialWordIndex");
+				long finalwordindex = ((MapMessage) m).getLong("finalWordIndex");
+				int attacknumber = ((MapMessage) m).getInt("attackNumber");
+				byte[] ciphertext = ((MapMessage) m).getBytes("cipherText");
+				byte[] knowntext = ((MapMessage) m).getBytes("knownText");
+
 			}
 		} catch (JMSException e) {
 			e.printStackTrace();
