@@ -119,6 +119,7 @@ public class SlaveExecute implements MessageListener {
 					}
 				}
 			}
+			message.setInt("numOfGuesses", guessCount);
 			
 			producer.send(this.getGuessesQueue(), message);
 		} catch (JMSException e) {

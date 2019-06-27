@@ -7,6 +7,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +26,7 @@ import br.inf.ufes.ppd.Master;
 public class MasterExecute implements Master, MessageListener {
 
 	private Map<Integer, List<Guess>> guessesMap = new HashMap<>();
+	private Map<Integer, AttackFinishThread> attackFinishControlMap = new HashMap<>();
 	private int attackNumber;
 	private int lineNumber;
 	// Thread para verificar os checkpoints dos slaves.
@@ -73,20 +75,20 @@ public class MasterExecute implements Master, MessageListener {
 
 	@Override
 	public Guess[] attack(byte[] ciphertext, byte[] knowntext) throws RemoteException {
+		int attackNumberLocal = this.getAttackNumber();
+		this.incrementAttackNumber();
+		
 		try (Scanner s = new Scanner(System.in)) {
 			this.setCiphertext(ciphertext);
 			this.setKnowntext(knowntext);
 			long partitionSize = this.getLineNumber() / this.getM();
-			int attackNumberLocal;
 			long initialwordindex, finalwordindex, modwordindex;
 			initialwordindex = 0;
 			finalwordindex = this.getLineNumber() / partitionSize;
 			modwordindex = this.getLineNumber() % partitionSize;
-			attackNumberLocal = this.getAttackNumber();
+			
 			long keyNumbers = finalwordindex;
 			
-			this.incrementAttackNumber();
-		
 			Logger.getLogger("").setLevel(Level.SEVERE);
 			System.out.println("obtaining connection factory...");
 			com.sun.messaging.ConnectionFactory connectionFactory = new com.sun.messaging.ConnectionFactory();
@@ -95,11 +97,16 @@ public class MasterExecute implements Master, MessageListener {
 			
 			System.out.println("obtaining queues...");
 			com.sun.messaging.Queue subAttacksQueue = new com.sun.messaging.Queue("SubAttacksQueue");
-			com.sun.messaging.Queue guessesQueue = new com.sun.messaging.Queue("GuessesQueue");
+//			com.sun.messaging.Queue guessesQueue = new com.sun.messaging.Queue("GuessesQueue");
 			System.out.println("obtained queues.");
 
 			JMSContext context = connectionFactory.createContext();
 			JMSProducer producer = context.createProducer(); 
+			
+			AttackFinishThread attackFinishControl = new AttackFinishThread();
+			Thread attackFinishControlThread = new Thread(attackFinishControl);
+			
+			this.putOnAttackFinishControlMap(attackNumberLocal, attackFinishControl);
 			
 			for (int i = 0; i < partitionSize; i++) {
 				MapMessage message = context.createMapMessage(); 
@@ -107,35 +114,52 @@ public class MasterExecute implements Master, MessageListener {
 				message.setBytes("cipherText", ciphertext);
 				message.setBytes("knownText", knowntext);
 				message.setLong("initialWordIndex", initialwordindex);
-				if (i == partitionSize - 1) finalwordindex += modwordindex;
+				if (i == partitionSize - 1)
+					finalwordindex += modwordindex;
 				message.setLong("finalWordIndex", finalwordindex);
 				message.setInt("attackNumber", attackNumberLocal);
+				
+				synchronized(attackFinishControl) {attackFinishControl.incrementAttack();}
+				
 				producer.send(subAttacksQueue, message);
 				System.out.println("Partition [" + (i + 1) + "] - Sent a message: [" + initialwordindex + ":" + finalwordindex + "]");
 				initialwordindex = finalwordindex + 1;
 				finalwordindex += keyNumbers;
 			}
 			
+			attackFinishControlThread.start();
+			
+			attackFinishControlThread.join();
 
 		} catch (JMSException e) {
+			e.printStackTrace();
+		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
 		
 
-		return null;
+		return this.getAttackGuesses(attackNumberLocal);
 	}
 	
 	@Override
 	public void onMessage(Message m) {
 		try {
 			if (m instanceof MapMessage) {
+				int numOfGuesses = ((MapMessage) m).getInt("numOfGuesses");
+				int attackNumber = ((MapMessage) m).getIntProperty("attackNumber");
+				int i;
 				
-				long initialwordindex = ((MapMessage) m).getLong("initialWordIndex");
-				long finalwordindex = ((MapMessage) m).getLong("finalWordIndex");
-				int attacknumber = ((MapMessage) m).getInt("attackNumber");
-				byte[] ciphertext = ((MapMessage) m).getBytes("cipherText");
-				byte[] knowntext = ((MapMessage) m).getBytes("knownText");
+				List<Guess> guesses = new ArrayList<Guess>();
+				
+				for(i = 0; i < numOfGuesses; i++) {
+					Guess guess = new Guess();
+					guess.setKey( ((MapMessage) m).getString("key_" + i) );					
+					guess.setMessage( ((MapMessage) m).getBytes("guess_" + i) );	
+					guesses.add(guess);
+				}
 
+				this.putOnGuessesMap(attackNumber, guesses);
+				this.decrementAttackCounter(attackNumber);
 			}
 		} catch (JMSException e) {
 			e.printStackTrace();
@@ -159,7 +183,38 @@ public class MasterExecute implements Master, MessageListener {
 	}
 
 	public Map<Integer, List<Guess>> getGuessesMap() {
-		return guessesMap;
+		return this.guessesMap;
+	}
+	
+	public void putOnGuessesMap(int attackNumber, List<Guess> guesses) {
+		this.guessesMap.put(attackNumber, guesses);
+	}
+	
+	public Guess[] getAttackGuesses(int attackNumber) {
+		Guess[] guesses = new Guess[this.getGuessesMap().get(attackNumber).size()];
+		int guessCount = 0;
+		for (Guess g : this.getGuessesMap().get(attackNumber)) {
+			guesses[guessCount++] = g;
+		}
+		
+		return guesses;
+	}
+	
+	public void putOnAttackFinishControlMap(int attackNumber, AttackFinishThread control) {
+		this.attackFinishControlMap.put(attackNumber, control);
+	}
+	
+	public AttackFinishThread getAttackFinishThreadFromMap(int attackNumber) {
+		return this.attackFinishControlMap.get(attackNumber);
+	}
+	
+	public void decrementAttackCounter(int attackNumber) {
+		AttackFinishThread aux = this.attackFinishControlMap.get(attackNumber);
+		
+		synchronized(aux) {
+			aux.decrementAttack();
+			aux.notify();
+		}
 	}
 
 	public int getAttackNumber() {

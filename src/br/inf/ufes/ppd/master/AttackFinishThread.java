@@ -1,45 +1,40 @@
-//package br.inf.ufes.ppd.master;
-//
-//import java.util.ArrayList;
-//import java.util.List;
-//import java.util.UUID;
-//
-//public class AttackFinishThread implements Runnable{
-//	
-//	
-//	public AttackFinishThread() {
-//		this.listSlaveID = new ArrayList<UUID>();
-//	}
-//
-//	public List<UUID> getListSlaveID() {
-//		return listSlaveID;
-//	}
-//
-//	public void setList(List<UUID> listSlaveID) {
-//		this.listSlaveID = listSlaveID;
-//	}
-//	
-//	public void removeList(UUID uuid){
-//		synchronized(this.listSlaveID){
-//			this.listSlaveID.remove(uuid);
-//		}
-//	}
-//	
-//	public void clearList() {
-//		this.listSlaveID.clear();
-//	}
-//
-//	@Override
-//	public void run() {
-//		try {
-//			while(true) {
-//				synchronized(this) { wait(); }
-//				if(this.getListSlaveID().isEmpty()) break;
-//			}
-//		} catch (InterruptedException e) {
-//			System.out.println("Interrupted Exception no MasterFinishThread");
-//			e.printStackTrace();
-//		}
-//		
-//	}
-//}
+package br.inf.ufes.ppd.master;
+
+public class AttackFinishThread implements Runnable{
+	
+	private int onGoingAttacks; 
+	
+	public AttackFinishThread() {
+		this.onGoingAttacks = 0;
+	}
+
+	public int getOnGoingAttacks() {
+		return this.onGoingAttacks;
+	}
+	
+	public boolean isFinished() {
+		return (this.onGoingAttacks == 0);
+	}
+
+	public void incrementAttack() {
+		this.onGoingAttacks++;
+	}
+	
+	public void decrementAttack(){
+		this.onGoingAttacks--;
+	}
+
+	@Override
+	public void run() {
+		try {
+			while(true) {
+				synchronized(this) { wait(); }
+				if(this.isFinished()) break;
+			}
+		} catch (InterruptedException e) {
+			System.out.println("Interrupted Exception no AttackFinishThread");
+			e.printStackTrace();
+		}
+		
+	}
+}
