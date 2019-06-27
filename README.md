@@ -26,7 +26,7 @@ Com as filas importadas, agora podemos compilar o projeto.
 
 Execute na pasta raíz do projeto o comando:
 
-`java -d bin -cp .:/<diretório do glassfish>/lib/gf-client.jar src/*.java`
+`javac -d bin -cp .:/<diretório do glassfish>/lib/gf-client.jar src/*.java`
 
 No nosso projeto fica:
 
@@ -38,7 +38,7 @@ Para executar cada arquivo, basta executar:
 
 No nosso projeto fica, por exemplo:
 
-`java -cp .:./bin:/<diretório do glassfish>/lib/gf-client.jar br.inf.ufes.ppd.master.Master`
+`java -cp .:./bin:/<diretório do glassfish>/lib/gf-client.jar br.inf.ufes.ppd.master.MasterExecute`
 
 # Especificações:
 
