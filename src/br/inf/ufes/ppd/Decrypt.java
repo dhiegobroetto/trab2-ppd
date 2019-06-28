@@ -36,7 +36,7 @@ public class Decrypt {
 
 	public synchronized static void saveFile(String filename, byte[] data) throws IOException {
 
-		FileOutputStream out = new FileOutputStream(filename);
+		FileOutputStream out = new FileOutputStream("messages/" + filename);
 		out.write(data);
 		out.close();
 

@@ -77,11 +77,12 @@ public class ClientExecute {
 			System.out.println("Total time: " + secondsTime + " seconds.");
 			
 			
-//			for (Guess guess : guesses) {
-//				if (guess == null)
-//					break;
-//				Decrypt.saveFile(guess.getKey() + ".msg", guess.getMessage());
-//			}
+			for (Guess guess : guesses) {
+				if (guess == null)
+					break;
+				System.out.println("[Candidate Key] Key: [" + guess.getKey() + "]");
+				Decrypt.saveFile(guess.getKey() + ".msg", guess.getMessage());
+			}
 		} catch (RemoteException e) {
 			System.out.println("[Error] RemoteException in ClientExecute.");
 			e.printStackTrace();

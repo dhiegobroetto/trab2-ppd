@@ -103,7 +103,7 @@ public class SlaveExecute implements MessageListener {
 			while (scanner.hasNextLine()) {
 				if (i >= j)
 					break;
-				i++;
+				
 				String key = scanner.nextLine();
 				Guess guess = new Guess();
 				guess.setMessage(Decrypt.decryptFile(ciphertext, key));
@@ -111,13 +111,16 @@ public class SlaveExecute implements MessageListener {
 					String decryptedText = new String(guess.getMessage());
 					if (decryptedText.indexOf(knowntext) != -1) {
 						guess.setKey(key);
-						System.out.println("[Candidate Key] attackNumber: [" + attacknumber + "] Index: ["
-								+ (initialwordindex + i - 1) + "]; Key: [" + key + "]");
-						message.setBytes("guess_" + Integer.toString(guessCount), ciphertext);
+						System.out.println("[Candidate Key] attackNumber: [" + attacknumber + "] Index: [" + (initialwordindex + i) + "]; Key: [" + key + "]");
+						message.setLong("currentIndex_" + Integer.toString(guessCount), i);
+//						message.setBytes("guess_" + Integer.toString(guessCount), ciphertext);
 						message.setString("key_" + Integer.toString(guessCount), key);
+						message.setString("knownText_" + Integer.toString(guessCount), knowntext);
+						message.setString("decryptedText_" + Integer.toString(guessCount), decryptedText);
 						guessCount++;
 					}
 				}
+				i++;
 			}
 			message.setInt("numOfGuesses", guessCount);
 			
@@ -132,10 +135,6 @@ public class SlaveExecute implements MessageListener {
 
 	}
 
-	// public UUID getSlaveKey() {
-	// return slaveKey;
-	// }
-	//
 	public String getFileName() {
 		return fileName;
 	}

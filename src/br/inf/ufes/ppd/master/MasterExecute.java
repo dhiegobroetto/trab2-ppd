@@ -97,7 +97,6 @@ public class MasterExecute implements Master, MessageListener {
 			
 			System.out.println("obtaining queues...");
 			com.sun.messaging.Queue subAttacksQueue = new com.sun.messaging.Queue("SubAttacksQueue");
-//			com.sun.messaging.Queue guessesQueue = new com.sun.messaging.Queue("GuessesQueue");
 			System.out.println("obtained queues.");
 
 			JMSContext context = connectionFactory.createContext();
@@ -136,26 +135,32 @@ public class MasterExecute implements Master, MessageListener {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-		
-
-		return this.getAttackGuesses(attackNumberLocal);
+		Guess[] guesses = this.getAttackGuesses(attackNumberLocal);
+		System.out.println("[Guess] Total of " + this.getAttackGuesses(attackNumberLocal).length + " guesses found!");
+		this.cleanGuessMap(attackNumberLocal);
+		return guesses;
 	}
 	
 	@Override
 	public void onMessage(Message m) {
 		try {
 			if (m instanceof MapMessage) {
-				int numOfGuesses = ((MapMessage) m).getInt("numOfGuesses");
 				int attackNumber = ((MapMessage) m).getIntProperty("attackNumber");
+				int numOfGuesses = ((MapMessage) m).getInt("numOfGuesses");
+				
 				int i;
 				
 				List<Guess> guesses = new ArrayList<Guess>();
 				
 				for(i = 0; i < numOfGuesses; i++) {
+					long currentindex = ((MapMessage) m).getLong("currentIndex_" + i);
 					Guess guess = new Guess();
-					guess.setKey( ((MapMessage) m).getString("key_" + i) );					
-					guess.setMessage( ((MapMessage) m).getBytes("guess_" + i) );	
+					guess.setKey( ((MapMessage) m).getString("key_" + i) );
+//					guess.setMessage( ((MapMessage) m).getBytes("guess_" + i) );
+					String decryptedText = ((MapMessage) m).getString("decryptedText_" + i);
+					guess.setMessage(decryptedText.getBytes());
 					guesses.add(guess);
+					System.out.println("[Candidate Key] AttackNumber: [" + attackNumber + "] Index: [" + currentindex + "]; Key: [" + guess.getKey() + "]");
 				}
 
 				this.putOnGuessesMap(attackNumber, guesses);
@@ -187,7 +192,10 @@ public class MasterExecute implements Master, MessageListener {
 	}
 	
 	public void putOnGuessesMap(int attackNumber, List<Guess> guesses) {
-		this.guessesMap.put(attackNumber, guesses);
+		if(!this.getGuessesMap().containsKey(attackNumber))
+			this.getGuessesMap().put(attackNumber, guesses);
+		else
+			this.getGuessesMap().get(attackNumber).addAll(guesses);
 	}
 	
 	public Guess[] getAttackGuesses(int attackNumber) {
@@ -196,8 +204,12 @@ public class MasterExecute implements Master, MessageListener {
 		for (Guess g : this.getGuessesMap().get(attackNumber)) {
 			guesses[guessCount++] = g;
 		}
-		
 		return guesses;
+	}
+	
+	public void cleanGuessMap(int attackNumber) {
+		this.getGuessesMap().get(attackNumber).clear();
+		this.getGuessesMap().remove(attackNumber);
 	}
 	
 	public void putOnAttackFinishControlMap(int attackNumber, AttackFinishThread control) {
