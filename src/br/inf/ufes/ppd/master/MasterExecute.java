@@ -80,10 +80,14 @@ public class MasterExecute implements Master, MessageListener {
 		int attackNumberLocal = this.getAttackNumber();
 		this.incrementAttackNumber();
 		try {
-			long partitionSize = this.getLineNumber() / this.getM();
+			long partitionSize = this.getM();
 			long initialwordindex, finalwordindex, modwordindex;
 			initialwordindex = 0;
-			finalwordindex = this.getLineNumber() / partitionSize;
+			if(this.getLineNumber() < partitionSize)
+				finalwordindex = this.getLineNumber();
+			else
+				finalwordindex = partitionSize;
+			
 			modwordindex = this.getLineNumber() % partitionSize;
 
 			long keyNumbers = finalwordindex;
@@ -95,7 +99,7 @@ public class MasterExecute implements Master, MessageListener {
 
 			this.putOnAttackFinishControlMap(attackNumberLocal, attackFinishControl);
 
-			for (int i = 0; i < partitionSize; i++) {
+			for (int i = 0; i < this.getLineNumber(); i += partitionSize) {
 				MapMessage message = getContext().createMapMessage();
 
 				message.setBytes("cipherText", ciphertext);
