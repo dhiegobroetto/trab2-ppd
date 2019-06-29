@@ -9,41 +9,45 @@ import java.util.logging.Logger;
 import javax.jms.*;
 
 import com.sun.messaging.ConnectionConfiguration;
+import com.sun.messaging.ConnectionFactory;
+import com.sun.messaging.Queue;
 
 import br.inf.ufes.ppd.Decrypt;
 import br.inf.ufes.ppd.Guess;
 
 public class SlaveExecute implements MessageListener {
 
-	// protected UUID slaveKey;
 	protected String fileName;
-	protected com.sun.messaging.Queue guessesQueue;
-	// protected String slaveName;
+	protected String slaveName;
+	protected Queue guessesQueue;
+	protected JMSContext context;
 
-	public SlaveExecute(String fileName, com.sun.messaging.Queue guessesQueue) {
-		this.guessesQueue = guessesQueue;
+	public SlaveExecute(String fileName, String slaveName, Queue guessesQueue, JMSContext context) {
 		this.fileName = fileName;
+		this.slaveName = slaveName;
+		this.guessesQueue = guessesQueue;
+		this.context = context;
 	}
 
 	public static void main(String[] args) {
 		Logger.getLogger("").setLevel(Level.INFO);
 
-		System.out.println("obtaining connection factory...");
-		com.sun.messaging.ConnectionFactory connectionFactory = new com.sun.messaging.ConnectionFactory();
+		System.out.println("[System Factory] Obtaining connection factory...");
+		ConnectionFactory connectionFactory = new ConnectionFactory();
 		try {
 			connectionFactory.setProperty(ConnectionConfiguration.imqAddressList, "localhost:7676");
-			System.out.println("obtained connection factory.");
+			System.out.println("[System Factory] Obtained connection factory.");
 
-			System.out.println("obtaining queues...");
-			com.sun.messaging.Queue subAttacksQueue = new com.sun.messaging.Queue("SubAttacksQueue");
-			com.sun.messaging.Queue localGuessesQueue = new com.sun.messaging.Queue("GuessesQueue");
-			System.out.println("obtained queues.");
+			System.out.println("[System Queue] Obtaining queues...");
+			Queue subAttacksQueue = new Queue("SubAttacksQueue");
+			Queue guessesQueue = new Queue("GuessesQueue");
+			System.out.println("[System Queue] Obtained queues.");
 
 			JMSContext context = connectionFactory.createContext();
-
 			JMSConsumer consumer = context.createConsumer(subAttacksQueue);
 
-			MessageListener listener = new SlaveExecute(args[0], localGuessesQueue);
+			// Listener criado para a fila GuessesQueue
+			MessageListener listener = new SlaveExecute(args[0], args[1], guessesQueue, context);
 			consumer.setMessageListener(listener);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -60,16 +64,16 @@ public class SlaveExecute implements MessageListener {
 					int attacknumber = ((MapMessage) m).getInt("attackNumber");
 					byte[] ciphertext = ((MapMessage) m).getBytes("cipherText");
 					byte[] knowntext = ((MapMessage) m).getBytes("knownText");
+					int partition = ((MapMessage) m).getInt("partition");
 					Scanner scanner = new Scanner(new File(getFileName()));
 					for (int i = 0; i < initialwordindex && scanner.hasNextLine(); i++) {
 						scanner.nextLine();
 					}
-					
-					this.startSubAttack(ciphertext, knowntext, initialwordindex, finalwordindex, attacknumber, scanner);
+					this.startSubAttack(ciphertext, knowntext, initialwordindex, finalwordindex, attacknumber,
+							partition, scanner);
 				} catch (FileNotFoundException e) {
 					e.printStackTrace();
 				}
-
 			}
 		} catch (JMSException e) {
 			e.printStackTrace();
@@ -77,33 +81,29 @@ public class SlaveExecute implements MessageListener {
 	}
 
 	public void startSubAttack(byte[] ciphertext, byte[] knowntextbyte, long initialwordindex, long finalwordindex,
-			int attacknumber, Scanner scanner) {
+			int attacknumber, int partition, Scanner scanner) {
 		String knowntext = new String(knowntextbyte);
-		
+
 		try {
-			System.out.println("obtaining connection factory...");
-			com.sun.messaging.ConnectionFactory connectionFactory = new com.sun.messaging.ConnectionFactory();
-			connectionFactory.setProperty(ConnectionConfiguration.imqAddressList,"localhost:7676");
-			System.out.println("obtained connection factory.");
-	
-			JMSContext context = connectionFactory.createContext();
-			JMSProducer producer = context.createProducer();
-	
-			System.out.println("[System Attack] Attack no." + attacknumber + " has begun!");
-			System.out.println("[Slave Index] Attack: [" + attacknumber + "] Index: [" + initialwordindex + ";" + finalwordindex + "]");
-			
+			JMSProducer producer = this.getContext().createProducer();
+
+			System.out.println("[Slave Attack] Attack: [" + attacknumber + ":" + partition + "] Index: ["
+					+ initialwordindex + ";" + finalwordindex + "] has begun...");
+
 			long i = 0;
 			int guessCount = 0;
 			long j = finalwordindex - initialwordindex;
-			
-			MapMessage message = context.createMapMessage();
-			
+
+			MapMessage message = this.getContext().createMapMessage();
+
 			message.setIntProperty("attackNumber", attacknumber);
-	
+			message.setInt("partition", partition);
+			message.setString("slaveName", this.getSlaveName());
+
 			while (scanner.hasNextLine()) {
 				if (i >= j)
 					break;
-				
+
 				String key = scanner.nextLine();
 				Guess guess = new Guess();
 				guess.setMessage(Decrypt.decryptFile(ciphertext, key));
@@ -111,37 +111,43 @@ public class SlaveExecute implements MessageListener {
 					String decryptedText = new String(guess.getMessage());
 					if (decryptedText.indexOf(knowntext) != -1) {
 						guess.setKey(key);
-						System.out.println("[Candidate Key] attackNumber: [" + attacknumber + "] Index: [" + (initialwordindex + i) + "]; Key: [" + key + "]");
+						System.out.println("[Candidate Key] Attack: [" + attacknumber + ":" + partition + "] Index: ["
+								+ (initialwordindex + i) + "]; Key: [" + key + "] - Sent a message in [GuessesQueue]");
 						message.setLong("currentIndex_" + Integer.toString(guessCount), i);
-//						message.setBytes("guess_" + Integer.toString(guessCount), ciphertext);
+						message.setBytes("guess_" + Integer.toString(guessCount), guess.getMessage());
 						message.setString("key_" + Integer.toString(guessCount), key);
-						message.setString("knownText_" + Integer.toString(guessCount), knowntext);
-						message.setString("decryptedText_" + Integer.toString(guessCount), decryptedText);
 						guessCount++;
 					}
 				}
 				i++;
 			}
 			message.setInt("numOfGuesses", guessCount);
-			
+
 			producer.send(this.getGuessesQueue(), message);
 		} catch (JMSException e) {
 			e.printStackTrace();
 		}
-		
+
 		scanner.close();
 
-		System.out.println("[Attack] Attack no." + attacknumber + " finished!");
-
+		System.out.println("[Slave Attack] Attack: [" + attacknumber + ":" + partition + "] Index: [" + initialwordindex
+				+ ";" + finalwordindex + "] finished!");
 	}
 
 	public String getFileName() {
 		return fileName;
 	}
 
-	public com.sun.messaging.Queue getGuessesQueue() {
+	public String getSlaveName() {
+		return slaveName;
+	}
+
+	public Queue getGuessesQueue() {
 		return guessesQueue;
 	}
-	
-	
+
+	public JMSContext getContext() {
+		return context;
+	}
+
 }

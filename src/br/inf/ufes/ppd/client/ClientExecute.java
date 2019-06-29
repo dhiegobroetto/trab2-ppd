@@ -29,7 +29,6 @@ public class ClientExecute {
 					long initialTime = System.nanoTime();				
 					guesses = master.attack(ciphertext, knowntext);
 					long finalTime = System.nanoTime();
-					// Date totalDate = new Date(finalTime - initialTime);
 					long totalTime = finalTime - initialTime;
 					double secondsTime = (totalTime / 1_000_000_000.0);
 					System.out.println("File no." + i + "; Total time: " + secondsTime + " seconds.");
