@@ -66,9 +66,11 @@ public class SlaveExecute implements MessageListener {
 					byte[] knowntext = ((MapMessage) m).getBytes("knownText");
 					int partition = ((MapMessage) m).getInt("partition");
 					Scanner scanner = new Scanner(new File(getFileName()));
+					
 					for (int i = 0; i < initialwordindex && scanner.hasNextLine(); i++) {
 						scanner.nextLine();
 					}
+					
 					this.startSubAttack(ciphertext, knowntext, initialwordindex, finalwordindex, attacknumber,
 							partition, scanner);
 				} catch (FileNotFoundException e) {
@@ -101,7 +103,7 @@ public class SlaveExecute implements MessageListener {
 			message.setString("slaveName", this.getSlaveName());
 
 			while (scanner.hasNextLine()) {
-				if (i >= j)
+				if (i > j)
 					break;
 
 				String key = scanner.nextLine();
