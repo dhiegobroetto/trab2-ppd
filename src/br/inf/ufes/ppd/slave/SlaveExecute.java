@@ -15,7 +15,7 @@ import com.sun.messaging.Queue;
 import br.inf.ufes.ppd.Decrypt;
 import br.inf.ufes.ppd.Guess;
 
-public class SlaveExecute implements MessageListener {
+public class SlaveExecute {
 
 	protected String fileName;
 	protected String slaveName;
@@ -35,7 +35,7 @@ public class SlaveExecute implements MessageListener {
 		System.out.println("[System Factory] Obtaining connection factory...");
 		ConnectionFactory connectionFactory = new ConnectionFactory();
 		try {
-			connectionFactory.setProperty(ConnectionConfiguration.imqAddressList, "localhost:7676");
+			connectionFactory.setProperty(ConnectionConfiguration.imqAddressList, args[2] + ":7676");
 			System.out.println("[System Factory] Obtained connection factory.");
 
 			System.out.println("[System Queue] Obtaining queues...");
@@ -45,41 +45,43 @@ public class SlaveExecute implements MessageListener {
 
 			JMSContext context = connectionFactory.createContext();
 			JMSConsumer consumer = context.createConsumer(subAttacksQueue);
-
-			// Listener criado para a fila GuessesQueue
-			MessageListener listener = new SlaveExecute(args[0], args[1], guessesQueue, context);
-			consumer.setMessageListener(listener);
+			SlaveExecute slave = new SlaveExecute(args[0], args[1], guessesQueue, context);
+			while (true) {
+				Message m = consumer.receive();
+				if (m instanceof MapMessage) {
+					slave.sentMessage(m);
+				}
+				Thread.sleep(100);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
-	@Override
-	public void onMessage(Message m) {
+	public void sentMessage(Message m) {
+
 		try {
-			if (m instanceof MapMessage) {
-				try {
-					long initialwordindex = ((MapMessage) m).getLong("initialWordIndex");
-					long finalwordindex = ((MapMessage) m).getLong("finalWordIndex");
-					int attacknumber = ((MapMessage) m).getInt("attackNumber");
-					byte[] ciphertext = ((MapMessage) m).getBytes("cipherText");
-					byte[] knowntext = ((MapMessage) m).getBytes("knownText");
-					int partition = ((MapMessage) m).getInt("partition");
-					Scanner scanner = new Scanner(new File(getFileName()));
-					
-					for (int i = 0; i < initialwordindex && scanner.hasNextLine(); i++) {
-						scanner.nextLine();
-					}
-					
-					this.startSubAttack(ciphertext, knowntext, initialwordindex, finalwordindex, attacknumber,
-							partition, scanner);
-				} catch (FileNotFoundException e) {
-					e.printStackTrace();
-				}
+			long initialwordindex = ((MapMessage) m).getLong("initialWordIndex");
+			long finalwordindex = ((MapMessage) m).getLong("finalWordIndex");
+			int attacknumber = ((MapMessage) m).getInt("attackNumber");
+			byte[] ciphertext = ((MapMessage) m).getBytes("cipherText");
+			byte[] knowntext = ((MapMessage) m).getBytes("knownText");
+			int partition = ((MapMessage) m).getInt("partition");
+
+			Scanner scanner = new Scanner(new File(getFileName()));
+
+			for (int i = 0; i < initialwordindex && scanner.hasNextLine(); i++) {
+				scanner.nextLine();
 			}
+
+			this.startSubAttack(ciphertext, knowntext, initialwordindex, finalwordindex, attacknumber, partition,
+					scanner);
+		} catch (FileNotFoundException e) {
+			System.out.println("File not found in SlaveExecute");
 		} catch (JMSException e) {
 			e.printStackTrace();
 		}
+
 	}
 
 	public void startSubAttack(byte[] ciphertext, byte[] knowntextbyte, long initialwordindex, long finalwordindex,
