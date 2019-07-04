@@ -40,6 +40,12 @@ No nosso projeto fica, por exemplo:
 
 `java -cp .:./bin:/<diretório do glassfish>/lib/gf-client.jar br.inf.ufes.ppd.master.MasterExecute`
 
+Os parâmetros para execução do código fica:
+
+`java -cp .:./bin:/<diretório do glassfish>/lib/gf-client.jar br.inf.ufes.ppd.master.MasterExecute <dicionario> <m>`
+`java -cp .:./bin:/<diretório do glassfish>/lib/gf-client.jar br.inf.ufes.ppd.slave.SlaveExecute <dicionario> <slaveName> <host>`
+`java -cp .:./bin:/<diretório do glassfish>/lib/gf-client.jar br.inf.ufes.ppd.client.ClientExecute <host> <knownword> <cipher>`
+
 # Especificações:
 
 O objetivo deste trabalho é praticar programação paralela usando middleware orientado a mensagens JMS e realizar análise de desempenho em um cluster de computadores. O trabalho inclui a comparação desta implementação com a implementação do primeiro trabalho (baseada em Request-Response com Java RMI).
