@@ -43,7 +43,7 @@ No nosso projeto fica, por exemplo:
 Os parâmetros para execução do código fica:
 
 `java -cp .:./bin:/<diretório do glassfish>/lib/gf-client.jar br.inf.ufes.ppd.master.MasterExecute <dicionario> <m>`
-`java -cp .:./bin:/<diretório do glassfish>/lib/gf-client.jar br.inf.ufes.ppd.slave.SlaveExecute <dicionario> <slaveName> <host>`
+`java -cp .:./bin:/<diretório do glassfish>/lib/gf-client.jar br.inf.ufes.ppd.slave.SlaveExecute <host> <dicionario> <slaveName>`
 `java -cp .:./bin:/<diretório do glassfish>/lib/gf-client.jar br.inf.ufes.ppd.client.ClientExecute <host> <knownword> <cipher>`
 
 # Especificações:
