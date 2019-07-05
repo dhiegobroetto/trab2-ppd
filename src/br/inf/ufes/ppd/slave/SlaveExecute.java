@@ -35,7 +35,7 @@ public class SlaveExecute {
 		System.out.println("[System Factory] Obtaining connection factory...");
 		ConnectionFactory connectionFactory = new ConnectionFactory();
 		try {
-			connectionFactory.setProperty(ConnectionConfiguration.imqAddressList, args[2] + ":7676");
+			connectionFactory.setProperty(ConnectionConfiguration.imqAddressList, args[0] + ":7676");
 			System.out.println("[System Factory] Obtained connection factory.");
 
 			System.out.println("[System Queue] Obtaining queues...");
@@ -45,7 +45,7 @@ public class SlaveExecute {
 
 			JMSContext context = connectionFactory.createContext();
 			JMSConsumer consumer = context.createConsumer(subAttacksQueue);
-			SlaveExecute slave = new SlaveExecute(args[0], args[1], guessesQueue, context);
+			SlaveExecute slave = new SlaveExecute(args[1], args[2], guessesQueue, context);
 			while (true) {
 				Message m = consumer.receive();
 				if (m instanceof MapMessage) {
