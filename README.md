@@ -44,7 +44,36 @@ Os parâmetros para execução do código fica:
 
 `java -cp .:./bin:/<diretório do glassfish>/lib/gf-client.jar br.inf.ufes.ppd.master.MasterExecute <dicionario> <m>`
 `java -cp .:./bin:/<diretório do glassfish>/lib/gf-client.jar br.inf.ufes.ppd.slave.SlaveExecute <host> <dicionario> <slaveName>`
-`java -cp .:./bin:/<diretório do glassfish>/lib/gf-client.jar br.inf.ufes.ppd.client.ClientExecute <host> <knownword> <cipher>`
+`java -cp .:./bin:/<diretório do glassfish>/lib/gf-client.jar br.inf.ufes.ppd.client.ClientExecute <host> <knownword> <cipher> <m>`
+
+# Tutorial para iniciar os ataques
+
+- Primeiramente, deve-se iniciar o Glassfish, conforme explicado anteriormente.
+- Após iniciar o Glassfish, deve-se então iniciar o rmiregistry na pasta `bin`, encontrada na raíz do projeto executando:
+
+`rmiregistry`
+
+- Após isso, basta executar o master, slaves e client:
+
+`java -cp .:./bin:/<diretório do glassfish>/lib/gf-client.jar br.inf.ufes.ppd.master.MasterExecute <dicionario> <m>`
+`java -cp .:./bin:/<diretório do glassfish>/lib/gf-client.jar br.inf.ufes.ppd.slave.SlaveExecute <host> <dicionario> <slaveName>`
+`java -cp .:./bin:/<diretório do glassfish>/lib/gf-client.jar br.inf.ufes.ppd.client.ClientExecute <host> <knownword> <cipher> <m>`
+
+No nosso projeto, o **m** varia nos valores:
+
+`[100, 1000, 5000, 10000, 20000, 30000, 40000]`
+
+Os casos de testes foram, seguindo a especificação:
+
+- Caso A: 4 escravos em 3 máquinas;
+- Caso B: 4 escravos em 2 máquinas e 8 escravos em 1 máquina;
+
+Para rodar todos os testes com todos os valores de **m**, basta executar o master e o cliente, alterando o **m** em cada teste.
+
+Como por exemplo:
+
+`java -cp .:./bin:/<diretório do glassfish>/lib/gf-client.jar br.inf.ufes.ppd.master.MasterExecute <dicionario> **100**`
+`java -cp .:./bin:/<diretório do glassfish>/lib/gf-client.jar br.inf.ufes.ppd.client.ClientExecute <host> <knownword> <cipher> **100**`
 
 # Especificações:
 
