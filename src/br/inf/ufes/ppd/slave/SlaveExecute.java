@@ -36,6 +36,7 @@ public class SlaveExecute {
 		ConnectionFactory connectionFactory = new ConnectionFactory();
 		try {
 			connectionFactory.setProperty(ConnectionConfiguration.imqAddressList, args[0] + ":7676");
+			connectionFactory.setProperty(ConnectionConfiguration.imqConsumerFlowLimitPrefetch,"false");
 			System.out.println("[System Factory] Obtained connection factory.");
 
 			System.out.println("[System Queue] Obtaining queues...");
