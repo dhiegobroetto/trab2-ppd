@@ -81,7 +81,7 @@ public class MasterExecute implements Master, MessageListener {
 		this.incrementAttackNumber();
 		try {
 			long partitionSize = this.getM();
-			long initialwordindex, finalwordindex, modwordindex;
+			long initialwordindex, finalwordindex;
 			initialwordindex = 0;
 			if(this.getLineNumber() < partitionSize)
 				finalwordindex = this.getLineNumber();
@@ -89,7 +89,6 @@ public class MasterExecute implements Master, MessageListener {
 				finalwordindex = partitionSize;
 			
 			long partitionsNumber = this.getLineNumber() / finalwordindex;
-			modwordindex = this.getLineNumber() % partitionSize;
 
 			long keyNumbers = finalwordindex;
 

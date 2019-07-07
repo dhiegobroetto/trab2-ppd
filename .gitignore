@@ -9,3 +9,4 @@ glassfish-5.0.zip
 glassfish5/*
 *.classpath
 .classpath
+*.msg

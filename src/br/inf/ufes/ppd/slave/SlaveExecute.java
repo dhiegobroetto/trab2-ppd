@@ -50,7 +50,7 @@ public class SlaveExecute {
 			while (true) {
 				Message m = consumer.receive();
 				if (m instanceof MapMessage) {
-					slave.sentMessage(m);
+					slave.readMessage(m);
 				}
 				Thread.sleep(100);
 			}
@@ -59,7 +59,7 @@ public class SlaveExecute {
 		}
 	}
 
-	public void sentMessage(Message m) {
+	public void readMessage(Message m) {
 
 		try {
 			long initialwordindex = ((MapMessage) m).getLong("initialWordIndex");
