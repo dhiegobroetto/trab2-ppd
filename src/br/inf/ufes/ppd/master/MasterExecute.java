@@ -222,9 +222,8 @@ public class MasterExecute implements Master, MessageListener {
 	}
 
 	public void decrementAttackCounter(int attackNumber) {
-		AttackFinishThread aux = this.attackFinishControlMap.get(attackNumber);
-
-		synchronized (aux) {
+		synchronized(this.attackFinishControlMap) {
+			AttackFinishThread aux = this.attackFinishControlMap.get(attackNumber);
 			aux.decrementAttack();
 			aux.notify();
 		}
