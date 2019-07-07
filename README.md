@@ -62,7 +62,7 @@ Os parâmetros para execução do código fica:
 
 `java -cp .:./bin:/<diretório do glassfish>/lib/gf-client.jar br.inf.ufes.ppd.slave.SlaveExecute <host> <dicionario> <slaveName>`
 
-`java -cp .:./bin:/<diretório do glassfish>/lib/gf-client.jar br.inf.ufes.ppd.client.ClientExecute <host> <knownword> <cipher> <m>`
+`java -cp .:./bin:/<diretório do glassfish>/lib/gf-client.jar br.inf.ufes.ppd.client.ClientExecute <host> <knownword> <m>`
 
 No nosso projeto, o **m** varia nos valores:
 
@@ -80,7 +80,7 @@ Como por exemplo:
 
 `java -cp .:./bin:/<diretório do glassfish>/lib/gf-client.jar br.inf.ufes.ppd.master.MasterExecute <dicionario> **100**`
 
-`java -cp .:./bin:/<diretório do glassfish>/lib/gf-client.jar br.inf.ufes.ppd.client.ClientExecute <host> <knownword> <cipher> **100**`
+`java -cp .:./bin:/<diretório do glassfish>/lib/gf-client.jar br.inf.ufes.ppd.client.ClientExecute <host> <knownword> **100**`
 
 # Especificações:
 
