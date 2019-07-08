@@ -18,9 +18,8 @@ public class ClientExecute {
 		try {
 			Guess[] guesses = null;
 			byte[] ciphertext = null;
-			if (args.length < 4) {
-				int fileNumber = 1; // Número do arquivo, alterar quando iniciar novos escravos.
-				PrintWriter writer = new PrintWriter("result" + args[2] + "Slave.csv", "UTF-8");
+			if (args.length < 3) {
+				PrintWriter writer = new PrintWriter("resultSlave.csv", "UTF-8");
 				for (int i = 1; i <= 10; i++) {
 					byte[] knowntext = args[1].getBytes();
 					Registry registry = LocateRegistry.getRegistry(args[0]);
